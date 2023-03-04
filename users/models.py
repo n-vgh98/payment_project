@@ -9,7 +9,13 @@ class User(AbstractUser):
 class EmployerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.user.username
+
 
 class EmployeeProfile(models.Model):
     employer = models.ForeignKey(EmployerProfile, on_delete=models.DO_NOTHING, related_name='employer_employees')
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username
