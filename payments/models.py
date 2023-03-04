@@ -1,6 +1,6 @@
 from django.db import models
 from users.models import *
-from django.db.models import Sum
+from django.db.models import Sum, F
 
 
 class Payment(models.Model):
@@ -12,9 +12,12 @@ class Payment(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.title
+
     @property
     def total_payments(self):
-        payment = self.employee_payments_payments.all().aggregate(sum=Sum('get_total'))
+        payment = self.employee_payments_payments.all().aggregate(sum=Sum(F('hour') * F('hourly_wages')))
         return payment.get('sum')
 
 
