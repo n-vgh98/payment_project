@@ -1,5 +1,6 @@
 {% extends '_base.html' %}
 {% block content %}
+    {% load crispy_forms_tags %}
 
 
     <div class="row mb-4">
@@ -43,14 +44,62 @@
                                     <td class="align-middle text-sm">
                                         <span class="text-xs font-weight-bold"> {{ payment.date_payment }} </span>
                                     </td>
+
                                     <td class="align-middle text-sm">
-                                        <span class="text-xs font-weight-bold">{{ payment.status }}</span>
+                                        <a href="#statusModal{{ payment.id }}" data-bs-toggle="modal">
+                                            {% if payment.status == 0 %}
+                                                <button type="button" class="btn btn-danger w-60 my-4 mb-2">Inactive
+                                                </button>
+
+                                            {% elif payment.status == 1 %}
+                                                <button type="button" class="btn btn-primary w-60 my-4 mb-2">Pending
+                                                </button>
+
+                                            {% elif payment.status == 2 %}
+                                                <button type="button" class="btn btn-success w-60 my-4 mb-2">Paid
+                                                </button>
+                                            {% endif %}
+                                        </a>
                                     </td>
-                                    <td>
+
+
                                     <td class="align-middle text-sm">
                                         <span class="text-xs font-weight-bold">{{ payment.total_payments }}</span>
                                     </td>
                                 </tr>
+                                <div id="statusModal{{ payment.id }}" class="modal fade bd-example-modal-sm"
+                                     role="dialog"
+                                     aria-labelledby="mySmallModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-sm">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="btn-close btn-primary"
+                                                        data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="{% url 'change_payment_status' payment.id %}" method="post">
+                                                    {% csrf_token %}
+                                                    <div class="form-group">
+
+                                                        <input type="radio" name="status" id="pay"
+                                                               value="2">
+                                                        <label for="pay">Pay</label>
+                                                        <br>
+                                                        <input type="radio" name="status"
+                                                               id="inactive" value="0">
+                                                        <label for="inactive">Inactive</label>
+                                                    </div>
+                                                    <div class="text-center">
+                                                        <button type="submit"
+                                                                class="btn bg-gradient-primary w-100 my-4 mb-2">Save
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             {% endfor %}
                             </tbody>
                         </table>
@@ -61,7 +110,7 @@
     </div>
 
     <a href="#myModal" data-bs-toggle="modal"><i class="fa fa-plus"
-                                                               style="font-size: 25px"></i>Create new payment</a>
+                                                 style="font-size: 25px"></i>Create new payment</a>
 
 
     <!-- modal-->
@@ -75,20 +124,25 @@
                     <button type="button" class="btn-close btn-primary"
                             data-bs-dismiss="modal"></button>
                 </div>
-
-
                 <div class="modal-body">
                     <form action="{% url 'dashboard' %}" method="post">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        <div class="form-group">
+                            <label for="title">Title:</label>
+                            <input type="text" class="form-control" name="title">
+                        </div>
+                        <div class="form-group">
+                            <label for="date_payment">Payment Date:</label>
+                            <input type="date" class="form-control" name="date_payment">
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Save
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
-
-
-    </div>
     </div>
 
 {% endblock %}
