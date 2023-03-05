@@ -25,6 +25,7 @@ def dashboard(request):
             date_payment=date_payment,
             employer=employer
         )
+
         employee = request.POST.get('employee')
         hour = request.POST.get('hour')
         hourly_wages = request.POST.get('hourly_wages')
@@ -40,7 +41,8 @@ def dashboard(request):
 
 def change_payment_status(request, pk):
     payment = get_object_or_404(Payment, pk=pk)
-    payment.status = request.POST.get('status')
-    payment.save()
+    if not payment.status == 0:
+        payment.status = request.POST.get('status')
+        payment.save()
 
     return redirect('dashboard')
