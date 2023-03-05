@@ -4,14 +4,17 @@ from .forms import *
 
 
 def dashboard(request):
+    n = EmployeeProfile.objects.filter(employer=request.user.id)
     if request.method == 'GET':
         payments = Payment.objects.all()
         employees = EmployeeProfile.objects.filter(employer=request.user.id)
+
         context = {
             'payments': payments,
-            'employees': employees
+            'employees': employees,
+            'n': n
         }
-        return render(request, 'payments/dashboard.html', context=context)
+        return render(request, 'payments/dashboard.html', context)
     elif request.method == 'POST':
         title = request.POST.get('title')
         date_payment = request.POST.get('date_payment')
@@ -25,28 +28,19 @@ def dashboard(request):
         employee = request.POST.get('employee')
         hour = request.POST.get('hour')
         hourly_wages = request.POST.get('hourly_wages')
-        payment = payment_new.id
-        print(type(payment))
+        payment_id = payment_new.id
         EmployeePayment.objects.create(
-            payment=Payment.objects.get(id=payment),
-            employee=EmployeeProfile.objects.get(id=employee),
+            payment=Payment.objects.get(id=payment_id),
+            employee=EmployeeProfile.objects.filter(id=employee),
             hour=hour,
             hourly_wages=hourly_wages
         )
         return redirect('dashboard')
 
 
-# def create_payment(request):
-#     if request.method == 'GET':
-#         form = CreatePaymentForm()
-#         return render(request, 'payments/form.html', {'form':form})
-
-
 def change_payment_status(request, pk):
     payment = get_object_or_404(Payment, pk=pk)
-    Payment.objects.update(
-        title=payment.title,
-        date_payment=payment.date_payment,
-        status=request.POST.get('status')
-    )
+    payment.status = request.POST.get('status')
+    payment.save()
+
     return redirect('dashboard')

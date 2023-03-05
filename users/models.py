@@ -44,7 +44,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class EmployerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_employer')
+    balance = models.PositiveBigIntegerField(default=0)
 
     def __str__(self):
         return self.user.username
@@ -52,7 +53,7 @@ class EmployerProfile(models.Model):
 
 class EmployeeProfile(models.Model):
     employer = models.ForeignKey(EmployerProfile, on_delete=models.DO_NOTHING, related_name='employer_employees')
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_employee')
 
     def __str__(self):
-        return self.user.username
+        return self.user.email

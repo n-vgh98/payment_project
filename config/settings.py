@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os.path
 from pathlib import Path
-from decouple import config
+from datetime import timedelta
+from decouple import config, Csv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,6 +27,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool, default=True)
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=Csv(), default='http://*')
 
 
 # Application definition
@@ -44,6 +46,9 @@ INSTALLED_APPS = [
     'users',
     'payments',
 ]
+
+if not DEBUG:
+    INSTALLED_APPS.append('django_minio_backend.apps.DjangoMinioBackendConfig')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -82,12 +87,35 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': config("DB_NAME"),
+            'USER': config("DB_USER"),
+            'PASSWORD': config("DB_PASSWORD"),
+            'HOST': config('DB_HOST'),
+        }
     }
 }
 
+if not DEBUG:
+    MINIO_ENDPOINT = config('MINIO_ENDPOINT', default='booking-vgh-storage.darkube.app')
+    MINIO_ACCESS_KEY = config('MINIO_ACCESS_KEY', default='k9a8cnRqr5E0GL5fuvtKCDKeLbMPk16K')
+    MINIO_SECRET_KEY = config('MINIO_SECRET_KEY', default='7fLzgmJcpdPaRHnSAnxxWDm2rCin99r3')
+    MINIO_USE_HTTPS = True
+    MINIO_URL_EXPIRY_HOURS = timedelta(days=1)  # Default is 7 days (longest) if not defined
 
+    STATICFILES_STORAGE = 'django_minio_backend.models.MinioBackendStatic'
+    DEFAULT_FILE_STORAGE = 'django_minio_backend.models.MinioBackend'
+
+    MINIO_MEDIA_FILES_BUCKET = 'media'  # replacement for MEDIA_ROOT
+    MINIO_STATIC_FILES_BUCKET = 'static'  # replacement for STATIC_ROOT
+    MINIO_PUBLIC_BUCKETS = [
+        MINIO_MEDIA_FILES_BUCKET,
+        MINIO_STATIC_FILES_BUCKET
+    ]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
